@@ -16,6 +16,7 @@ INSIGHTS = {
     "graph1": "",  # 예: "이 영화는 개봉 직후 관객이 가장 많았고 이후 빠르게 줄었다."
     "graph2": "",
     "graph3": "",
+    "graph4": "",
 }
 
 
@@ -136,7 +137,35 @@ st.plotly_chart(fig3, use_container_width=True)
 show_insight("graph3")
 
 # ─────────────────────────────────────────────
-# 구역 4 : (다음 그래프를 여기에 추가)
+# 구역 4 : 일관객 합계 TOP 10 영화
+# ─────────────────────────────────────────────
+st.divider()
+st.header("구역 4. 관객이 가장 많았던 영화 TOP 10")
+
+# 영화별로 일관객을 모두 더하고, 10위권에 든 날수도 함께 셈
+by_movie = df.groupby("영화명").agg(총관객=("일관객", "sum"), 날수=("날짜", "nunique")).reset_index()
+top10 = by_movie.nlargest(10, "총관객")  # 관객이 많은 순서
+
+fig4 = px.bar(
+    top10,
+    x="총관객",
+    y="영화명",
+    orientation="h",
+    custom_data=["날수"],
+    title="이 기간 일관객 합계 TOP 10",
+)
+fig4.update_traces(
+    marker_color=WARM,
+    hovertemplate="%{y}<br>일관객 합계: %{x:,}명<br>10위권에 든 날수: %{customdata[0]}일<extra></extra>",
+)
+# 관객이 많은 영화가 맨 위에 오도록 세로축 순서를 뒤집음
+fig4.update_yaxes(autorange="reversed", title="")
+fig4.update_layout(xaxis_title="일관객 합계(명)")
+st.plotly_chart(fig4, use_container_width=True)
+show_insight("graph4")
+
+# ─────────────────────────────────────────────
+# 구역 5 : (다음 그래프를 여기에 추가)
 # ─────────────────────────────────────────────
 # st.divider()
-# st.header("구역 4. ...")
+# st.header("구역 5. ...")
