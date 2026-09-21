@@ -15,6 +15,7 @@ WARM = "#E4572E"  # 따뜻한 주황빛 붉은색
 INSIGHTS = {
     "graph1": "",  # 예: "이 영화는 개봉 직후 관객이 가장 많았고 이후 빠르게 줄었다."
     "graph2": "",
+    "graph3": "",
 }
 
 
@@ -100,7 +101,42 @@ st.plotly_chart(fig2, use_container_width=True)
 show_insight("graph2")
 
 # ─────────────────────────────────────────────
-# 구역 3 : (다음 그래프를 여기에 추가)
+# 구역 3 : 날짜별 10위권 일관객 합계
+# ─────────────────────────────────────────────
+st.divider()
+st.header("구역 3. 하루 전체 관객수 (10위권 합계)")
+st.caption("표시한 세 점은 합계가 가장 컸던 날이에요.")
+
+# 날짜별로 그날 10위권 일관객을 모두 더함
+daily = df.groupby("날짜", as_index=False)["일관객"].sum()
+peak3 = daily.nlargest(3, "일관객")  # 합계가 가장 컸던 3일
+
+fig3 = px.area(daily, x="날짜", y="일관객", title="날짜별 10위권 일관객 합계")
+fig3.update_traces(
+    line_color=WARM,
+    fillcolor="rgba(228, 87, 46, 0.30)",
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+)
+
+# 가장 컸던 3일을 점으로 찍고, 날짜를 글자로 적기
+fig3.add_scatter(
+    x=peak3["날짜"],
+    y=peak3["일관객"],
+    mode="markers+text",
+    text=peak3["날짜"].dt.strftime("%Y-%m-%d"),
+    textposition=["top center", "top right", "top left"],  # 글자가 겹치지 않게 위치를 나눔
+    marker=dict(size=11, color="#7B3F61", line=dict(width=2, color="white")),
+    showlegend=False,
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+)
+# 글자가 그래프 밖으로 잘리지 않게 위쪽 여백을 조금 늘림
+fig3.update_yaxes(range=[0, daily["일관객"].max() * 1.18])
+fig3.update_layout(xaxis_title="날짜", yaxis_title="10위권 일관객 합계(명)")
+st.plotly_chart(fig3, use_container_width=True)
+show_insight("graph3")
+
+# ─────────────────────────────────────────────
+# 구역 4 : (다음 그래프를 여기에 추가)
 # ─────────────────────────────────────────────
 # st.divider()
-# st.header("구역 3. ...")
+# st.header("구역 4. ...")
