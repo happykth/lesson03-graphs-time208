@@ -14,6 +14,7 @@ WARM = "#E4572E"  # 따뜻한 주황빛 붉은색
 # 새 그래프를 추가하면 키를 하나 더 만들어 주세요.
 INSIGHTS = {
     "graph1": "",  # 예: "이 영화는 개봉 직후 관객이 가장 많았고 이후 빠르게 줄었다."
+    "graph2": "",
 }
 
 
@@ -69,7 +70,37 @@ st.plotly_chart(fig1, use_container_width=True)
 show_insight("graph1")
 
 # ─────────────────────────────────────────────
-# 구역 2 : (다음 그래프를 여기에 추가)
+# 구역 2 : 일관객 합계 상위 5편 비교
+# ─────────────────────────────────────────────
+st.divider()
+st.header("구역 2. 관객이 가장 많았던 5편 비교")
+st.caption("범례의 영화 이름을 누르면 그 영화를 켜고 끌 수 있어요. 10위권 밖이던 날은 선이 끊겨요.")
+
+# 기간 내 일관객 합계가 가장 큰 5편
+top5 = df.groupby("영화명")["일관객"].sum().nlargest(5).index.tolist()
+
+# 영화 × 날짜 표로 바꾼 뒤, 전체 날짜로 늘려서 빈 날은 비워 둠(선이 끊기도록)
+wide = df[df["영화명"].isin(top5)].pivot_table(index="날짜", columns="영화명", values="일관객", aggfunc="sum")
+wide = wide.reindex(pd.date_range(df["날짜"].min(), df["날짜"].max()))[top5]
+wide.index.name = "날짜"
+long = wide.reset_index().melt(id_vars="날짜", var_name="영화명", value_name="일관객")
+
+fig2 = px.line(
+    long,
+    x="날짜",
+    y="일관객",
+    color="영화명",
+    category_orders={"영화명": top5},
+    color_discrete_sequence=["#E4572E", "#F3A712", "#7B3F61", "#669BBC", "#5B8E7D"],
+    title="일관객 합계 상위 5편 - 날짜별 일관객",
+)
+fig2.update_traces(hovertemplate="%{fullData.name}<br>날짜: %{x|%Y-%m-%d}<br>일관객: %{y:,}명<extra></extra>")
+fig2.update_layout(xaxis_title="날짜", yaxis_title="일관객(명)", legend_title_text="영화(눌러서 켜기/끄기)")
+st.plotly_chart(fig2, use_container_width=True)
+show_insight("graph2")
+
+# ─────────────────────────────────────────────
+# 구역 3 : (다음 그래프를 여기에 추가)
 # ─────────────────────────────────────────────
 # st.divider()
-# st.header("구역 2. ...")
+# st.header("구역 3. ...")
